@@ -141,6 +141,7 @@ const DataModule = (function () {
     deleteTodo,
     getMonthKey,
     getDateKey,
+    saveData,
   };
 })();
 
