@@ -5,18 +5,18 @@
 const AppModule = (function () {
   // Biến lưu trữ trạng thái ứng dụng
   let currentDate = new Date();
-  let todoData = {};
   let isInitialized = false;
 
   // Các phần tử DOM
   const elements = {
-    githubConfigForm: document.getElementById("github-config-form"),
-    tokenInput: document.getElementById("github-token"),
-    usernameInput: document.getElementById("github-username"),
-    repoInput: document.getElementById("github-repo"),
-    saveConfigBtn: document.getElementById("save-github-config"),
+    todoForm: document.getElementById("todo-form"),
+    todoInput: document.getElementById("todo-input"),
+    priorityInput: document.getElementById("priority-input"),
+    currentDateElement: document.getElementById("current-date"),
+    prevDayButton: document.getElementById("prev-day"),
+    nextDayButton: document.getElementById("next-day"),
+    todayButton: document.getElementById("today-btn"),
     commitBtn: document.getElementById("commit-btn"),
-    configStatus: document.getElementById("config-status"),
     todosList: document.getElementById("todos-list"),
   };
 
@@ -25,22 +25,19 @@ const AppModule = (function () {
     if (isInitialized) return;
 
     try {
+      // Hiển thị ngày hiện tại
+      updateDateDisplay();
+
       // Tải dữ liệu
       await loadData();
-
-      // Cập nhật UI
-      UIModule.updateDateDisplay(currentDate);
-      updateTodoList();
-      updateStatistics();
 
       // Thiết lập sự kiện
       setupEventListeners();
 
       // Thiết lập xử lý resize cho biểu đồ
-      ChartModule.setupResizeHandler(todoData);
-
-      // Cập nhật trạng thái GitHub
-      updateGitHubStatus();
+      if (window.ChartModule) {
+        window.ChartModule.setupResizeHandler(DataModule.getAllData());
+      }
 
       isInitialized = true;
     } catch (error) {
@@ -50,6 +47,20 @@ const AppModule = (function () {
         "error"
       );
     }
+  }
+
+  // Cập nhật hiển thị ngày
+  function updateDateDisplay() {
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    elements.currentDateElement.textContent = currentDate.toLocaleDateString(
+      "vi-VN",
+      options
+    );
   }
 
   // Hàm tải dữ liệu
@@ -77,7 +88,7 @@ const AppModule = (function () {
       }
 
       // Hiển thị danh sách công việc
-      renderTodos();
+      updateTodoList();
 
       // Cập nhật thống kê
       updateStatistics();
@@ -97,17 +108,8 @@ const AppModule = (function () {
     const dateKey = DataModule.getDateKey(currentDate);
     const monthKey = DataModule.getMonthKey(currentDate);
 
-    // Đảm bảo cấu trúc dữ liệu tồn tại
-    if (!todoData[monthKey]) {
-      todoData[monthKey] = {};
-    }
-
-    if (!todoData[monthKey][dateKey]) {
-      todoData[monthKey][dateKey] = [];
-    }
-
     // Lấy danh sách công việc cho ngày hiện tại
-    const todos = todoData[monthKey][dateKey];
+    const todos = DataModule.getTodos(monthKey, dateKey);
 
     // Cập nhật UI
     UIModule.renderTodos(todos);
@@ -118,29 +120,33 @@ const AppModule = (function () {
 
   // Hàm thiết lập sự kiện cho các mục todo
   function setupTodoItemEvents() {
-    // Sự kiện nút hoàn thành
-    document.querySelectorAll(".complete-btn").forEach((btn) => {
-      btn.addEventListener("click", function () {
-        const todoItem = this.closest(".todo-item");
-        const todoId = parseInt(todoItem.dataset.id);
+    elements.todosList.addEventListener("click", function (e) {
+      // Xử lý sự kiện hoàn thành công việc
+      if (
+        e.target.classList.contains("complete-btn") ||
+        e.target.closest(".complete-btn")
+      ) {
+        const todoItem = e.target.closest(".todo-item");
+        const todoId = todoItem.dataset.id;
         toggleTodoComplete(todoId);
-      });
-    });
+      }
 
-    // Sự kiện nút xóa
-    document.querySelectorAll(".delete-btn").forEach((btn) => {
-      btn.addEventListener("click", function () {
-        const todoItem = this.closest(".todo-item");
-        const todoId = parseInt(todoItem.dataset.id);
+      // Xử lý sự kiện xóa công việc
+      if (
+        e.target.classList.contains("delete-btn") ||
+        e.target.closest(".delete-btn")
+      ) {
+        const todoItem = e.target.closest(".todo-item");
+        const todoId = todoItem.dataset.id;
         deleteTodo(todoId);
-      });
+      }
     });
   }
 
   // Hàm cập nhật thống kê
   function updateStatistics() {
     // Tính toán thống kê
-    const stats = StatsModule.updateAllStats(todoData);
+    const stats = StatsModule.updateAllStats(DataModule.getAllData());
 
     // Cập nhật UI
     UIModule.updateStatistics(
@@ -149,42 +155,37 @@ const AppModule = (function () {
       stats.weekStats
     );
 
-    // Cập nhật biểu đồ
-    ChartModule.renderCharts(todoData);
+    // Cập nhật danh sách công việc lặp lại
+    UIModule.renderRecurringTasks(stats.recurringTasks);
   }
 
   // Hàm thiết lập các sự kiện
   function setupEventListeners() {
     // Sự kiện thêm công việc mới
-    document
-      .getElementById("todo-form")
-      .addEventListener("submit", function (e) {
-        e.preventDefault();
+    elements.todoForm.addEventListener("submit", function (e) {
+      e.preventDefault();
 
-        const todoInput = document.getElementById("todo-input");
-        const priorityInput = document.getElementById("priority-input");
+      const todoName = elements.todoInput.value.trim();
+      const priority = parseInt(elements.priorityInput.value);
 
-        const todoName = todoInput.value.trim();
-        const priority = parseInt(priorityInput.value);
-
-        if (todoName) {
-          addTodo(todoName, priority);
-          UIModule.resetTodoForm();
-        }
-      });
+      if (todoName) {
+        addTodo(todoName, priority);
+        UIModule.resetTodoForm();
+      }
+    });
 
     // Sự kiện chuyển ngày
-    document.getElementById("prev-day").addEventListener("click", function () {
+    elements.prevDayButton.addEventListener("click", function () {
       changeDate(-1);
     });
 
-    document.getElementById("next-day").addEventListener("click", function () {
+    elements.nextDayButton.addEventListener("click", function () {
       changeDate(1);
     });
 
-    document.getElementById("today-btn").addEventListener("click", function () {
+    elements.todayButton.addEventListener("click", function () {
       currentDate = new Date();
-      UIModule.updateDateDisplay(currentDate);
+      updateDateDisplay();
       updateTodoList();
       updateStatistics();
     });
@@ -192,15 +193,7 @@ const AppModule = (function () {
     // Thiết lập sự kiện cho các ngôi sao
     UIModule.setupStarsEvents();
 
-    // Sự kiện lưu cấu hình GitHub
-    if (elements.githubConfigForm) {
-      elements.githubConfigForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        saveGitHubConfig();
-      });
-    }
-
-    // Sự kiện commit lên GitHub
+    // Sự kiện lưu lên GitHub
     if (elements.commitBtn) {
       elements.commitBtn.addEventListener("click", commitToGitHub);
     }
@@ -208,26 +201,78 @@ const AppModule = (function () {
 
   // Hàm thêm công việc mới
   function addTodo(name, priority) {
-    DataModule.addTodo(currentDate, name, priority);
+    // Tạo ID duy nhất
+    const todoId = Date.now().toString();
+
+    // Tạo đối tượng công việc mới
+    const newTodo = {
+      id: todoId,
+      name: name,
+      priority: priority,
+      completed: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Thêm vào dữ liệu
+    const dateKey = DataModule.getDateKey(currentDate);
+    const monthKey = DataModule.getMonthKey(currentDate);
+
+    DataModule.addTodo(monthKey, dateKey, newTodo);
+
+    // Cập nhật giao diện
     updateTodoList();
     updateStatistics();
-    DataModule.saveData();
+
+    // Hiển thị biểu đồ
+    if (window.ChartModule) {
+      window.ChartModule.renderCharts(DataModule.getAllData());
+    }
+
+    // Hiển thị thông báo
+    UIModule.showStatusMessage("Đã thêm công việc mới!", "success");
   }
 
   // Hàm xóa công việc
-  function deleteTodo(id) {
-    DataModule.deleteTodo(currentDate, id);
-    updateTodoList();
-    updateStatistics();
-    DataModule.saveData();
+  function deleteTodo(todoId) {
+    const dateKey = DataModule.getDateKey(currentDate);
+    const monthKey = DataModule.getMonthKey(currentDate);
+
+    const success = DataModule.deleteTodo(monthKey, dateKey, todoId);
+
+    if (success) {
+      updateTodoList();
+      updateStatistics();
+
+      // Cập nhật biểu đồ
+      if (window.ChartModule) {
+        window.ChartModule.renderCharts(DataModule.getAllData());
+      }
+
+      UIModule.showStatusMessage("Đã xóa công việc!", "success");
+    }
   }
 
   // Hàm đánh dấu hoàn thành công việc
-  function toggleTodoComplete(id) {
-    DataModule.toggleTodoComplete(currentDate, id);
-    updateTodoList();
-    updateStatistics();
-    DataModule.saveData();
+  function toggleTodoComplete(todoId) {
+    const dateKey = DataModule.getDateKey(currentDate);
+    const monthKey = DataModule.getMonthKey(currentDate);
+
+    const success = DataModule.toggleTodoComplete(monthKey, dateKey, todoId);
+
+    if (success) {
+      updateTodoList();
+      updateStatistics();
+
+      // Cập nhật biểu đồ
+      if (window.ChartModule) {
+        window.ChartModule.renderCharts(DataModule.getAllData());
+      }
+
+      UIModule.showStatusMessage(
+        "Đã cập nhật trạng thái công việc!",
+        "success"
+      );
+    }
   }
 
   // Hàm thay đổi ngày
@@ -236,85 +281,36 @@ const AppModule = (function () {
     newDate.setDate(newDate.getDate() + offset);
     currentDate = newDate;
 
-    UIModule.updateDateDisplay(currentDate);
+    updateDateDisplay();
     updateTodoList();
     updateStatistics();
   }
 
-  // Hàm lưu cấu hình GitHub
-  function saveGitHubConfig() {
-    const token = elements.tokenInput.value.trim();
-    const username = elements.usernameInput.value.trim();
-    const repo = elements.repoInput.value.trim();
-
-    if (token && username && repo) {
-      const configured = GitHubModule.saveConfig(token, username, repo);
-      updateGitHubStatus();
-
-      if (configured) {
-        UIModule.showStatusMessage(
-          "GitHub configuration saved successfully",
-          "success"
-        );
-      } else {
-        UIModule.showStatusMessage(
-          "Failed to save GitHub configuration",
-          "error"
-        );
-      }
-    } else {
-      UIModule.showStatusMessage(
-        "Please fill in all GitHub configuration fields",
-        "error"
-      );
-    }
-  }
-
-  // Hàm cập nhật trạng thái GitHub
-  function updateGitHubStatus() {
-    if (elements.configStatus) {
-      const isConfigured = GitHubModule.isConfigured();
-      elements.configStatus.textContent = isConfigured
-        ? "GitHub is configured"
-        : "GitHub is not configured";
-      elements.configStatus.className = isConfigured
-        ? "status-success"
-        : "status-error";
-
-      if (elements.commitBtn) {
-        elements.commitBtn.disabled = !isConfigured;
-      }
-    }
-  }
-
   // Hàm commit lên GitHub
   async function commitToGitHub() {
-    if (!GitHubModule.isConfigured()) {
-      UIModule.showStatusMessage("GitHub is not configured", "error");
-      return;
-    }
-
     try {
-      UIModule.showStatusMessage("Committing to GitHub...", "loading");
-
-      // Lưu dữ liệu trước khi commit
-      const saveResult = await DataModule.saveData();
-
-      if (!saveResult.success) {
-        throw new Error(saveResult.message || "Failed to save data");
+      if (!window.GitHubModule || !window.GitHubModule.isConfigured()) {
+        UIModule.showStatusMessage("GitHub chưa được cấu hình!", "error");
+        return;
       }
 
-      // Thực hiện commit
-      const result = await GitHubModule.saveDataToGitHub(todoData);
+      UIModule.showStatusMessage("Đang lưu dữ liệu lên GitHub...", "info");
+
+      // Lấy tháng hiện tại
+      const monthKey = DataModule.getMonthKey(currentDate);
+      const monthData = DataModule.getMonthData(monthKey);
+
+      // Lưu dữ liệu lên GitHub
+      await window.GitHubModule.saveDataToGitHub(monthData);
 
       UIModule.showStatusMessage(
-        result.message,
-        result.success ? "success" : "error"
+        "Đã lưu dữ liệu lên GitHub thành công!",
+        "success"
       );
     } catch (error) {
-      console.error("Error committing to GitHub:", error);
+      console.error("Lỗi khi lưu dữ liệu lên GitHub:", error);
       UIModule.showStatusMessage(
-        "Error committing to GitHub: " + error.message,
+        `Lỗi khi lưu dữ liệu: ${error.message}`,
         "error"
       );
     }

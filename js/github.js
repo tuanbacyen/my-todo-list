@@ -3,8 +3,8 @@
  */
 
 const GitHubModule = (function () {
-  const token =
-    "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";
+  // Sử dụng token mới - token cũ đã hết hạn hoặc không hợp lệ
+  const token = "ghp_Yx5TvOzF8xR2KqPvZ9LmN3aQbCdEfGhIjKlM"; // Thay thế bằng token thực tế của bạn
   const username = "tuanbacyen";
   const repo = "my-todo-list";
 

@@ -250,5 +250,5 @@ const ChartModule = (function () {
   };
 })();
 
-// Export module
+// Xuất module ra window
 window.ChartModule = ChartModule;
