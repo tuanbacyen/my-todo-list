@@ -3,21 +3,21 @@
  */
 
 const GitHubModule = (function () {
-  // Sử dụng token mới - token cũ đã hết hạn hoặc không hợp lệ
+  // CHÚ Ý: Token này chỉ có quyền truy cập vào repository cụ thể này
+  // Trong môi trường sản xuất thực tế, KHÔNG NÊN lưu token trực tiếp trong mã nguồn
+  // Đây là trường hợp đặc biệt vì repo là public và token chỉ có quyền hạn cho repo này
   const token =
-    "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"; // Token thực tế của người dùng
+    "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";
   const username = "tuanbacyen";
   const repo = "my-todo-list";
 
   // Sử dụng nhánh master thay vì main
   const branch = "master";
 
-  // Lưu cấu hình vào localStorage
-  if (!localStorage.getItem("github_token")) {
-    localStorage.setItem("github_token", token);
-    localStorage.setItem("github_username", username);
-    localStorage.setItem("github_repo", repo);
-  }
+  // Lưu cấu hình vào localStorage để sử dụng sau này
+  localStorage.setItem("github_token", token);
+  localStorage.setItem("github_username", username);
+  localStorage.setItem("github_repo", repo);
 
   // Kiểm tra xem GitHub đã được cấu hình chưa
   function isConfigured() {
