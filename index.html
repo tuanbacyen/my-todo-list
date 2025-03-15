@@ -137,6 +137,34 @@
 
       <div class="actions">
         <button id="commit-btn" class="github-btn">Lưu lên GitHub</button>
+        <button id="github-config-btn" class="github-btn">
+          Cấu hình GitHub
+        </button>
+      </div>
+
+      <!-- Form cấu hình GitHub -->
+      <div id="github-config-modal" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <h3>Cấu hình GitHub</h3>
+          <p>
+            Token cần có quyền: <code>repo</code> hoặc
+            <code>contents:read</code> và <code>contents:write</code>
+          </p>
+          <div id="current-token-info"></div>
+          <form id="github-config-form">
+            <div class="form-group">
+              <label for="github-token">Token:</label>
+              <input
+                type="password"
+                id="github-token"
+                placeholder="GitHub Personal Access Token"
+                required
+              />
+            </div>
+            <button type="submit">Lưu cấu hình</button>
+          </form>
+        </div>
       </div>
 
       <!-- Thông báo trạng thái -->

@@ -39,6 +39,11 @@ const AppModule = (function () {
         window.ChartModule.setupResizeHandler(DataModule.getAllData());
       }
 
+      // Thiết lập sự kiện cho form cấu hình GitHub
+      if (window.GitHubModule) {
+        window.GitHubModule.setupConfigEvents();
+      }
+
       isInitialized = true;
     } catch (error) {
       console.error("Error initializing app:", error);

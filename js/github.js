@@ -3,29 +3,84 @@
  */
 
 const GitHubModule = (function () {
-  // CHÚ Ý: Token này chỉ có quyền truy cập vào repository cụ thể này
-  // Trong môi trường sản xuất thực tế, KHÔNG NÊN lưu token trực tiếp trong mã nguồn
-  // Đây là trường hợp đặc biệt vì repo là public và token chỉ có quyền hạn cho repo này
-  // Chia nhỏ token để tránh GitHub phát hiện
-  const tokenParts = [
-    "github_pat_11AFS34FA0",
-    "e8oR96hYtB7Z_MrucGwFUgkn8ffhJNOTxNAIv5n86DHLZtFUzVn7clzFVSU4HBMNTqqJ1TaP",
-  ];
-  const token = tokenParts.join("");
+  // Lấy thông tin cấu hình từ localStorage
+  let token = localStorage.getItem("github_token") || "";
   const username = "tuanbacyen";
   const repo = "my-todo-list";
-
-  // Sử dụng nhánh master thay vì main
   const branch = "master";
 
-  // Lưu cấu hình vào localStorage để sử dụng sau này
-  localStorage.setItem("github_token", token);
-  localStorage.setItem("github_username", username);
-  localStorage.setItem("github_repo", repo);
+  // Hiển thị thông tin token hiện tại
+  function displayCurrentToken() {
+    const tokenInfoElement = document.getElementById("current-token-info");
+    if (!tokenInfoElement) return;
+
+    if (token) {
+      const firstFive = token.substring(0, 5);
+      const lastFive = token.substring(token.length - 5);
+      tokenInfoElement.innerHTML = `<p>Token hiện tại: ${firstFive}...${lastFive}</p>`;
+    } else {
+      tokenInfoElement.innerHTML = "<p>Chưa có token nào được cấu hình</p>";
+    }
+  }
+
+  // Thiết lập cấu hình GitHub
+  function configure(newToken) {
+    token = newToken;
+    localStorage.setItem("github_token", token);
+    displayCurrentToken();
+    return isConfigured();
+  }
 
   // Kiểm tra xem GitHub đã được cấu hình chưa
   function isConfigured() {
     return token && username && repo;
+  }
+
+  // Thiết lập sự kiện cho form cấu hình
+  function setupConfigEvents() {
+    const configBtn = document.getElementById("github-config-btn");
+    const modal = document.getElementById("github-config-modal");
+    const closeBtn = modal?.querySelector(".close");
+    const form = document.getElementById("github-config-form");
+
+    // Hiển thị thông tin token hiện tại
+    displayCurrentToken();
+
+    if (configBtn) {
+      configBtn.addEventListener("click", function () {
+        if (modal) modal.style.display = "block";
+      });
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", function () {
+        if (modal) modal.style.display = "none";
+      });
+    }
+
+    // Đóng modal khi click bên ngoài
+    window.addEventListener("click", function (event) {
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    });
+
+    if (form) {
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const tokenInput = document.getElementById("github-token");
+        if (tokenInput && tokenInput.value) {
+          const success = configure(tokenInput.value);
+          if (success) {
+            if (modal) modal.style.display = "none";
+            UIModule.showStatusMessage(
+              "Đã lưu cấu hình GitHub thành công!",
+              "success"
+            );
+          }
+        }
+      });
+    }
   }
 
   // Đảm bảo thư mục data tồn tại
@@ -246,6 +301,7 @@ const GitHubModule = (function () {
     isConfigured,
     saveDataToGitHub,
     loadDataFromGitHub,
+    setupConfigEvents,
   };
 })();
 
