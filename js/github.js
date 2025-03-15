@@ -5,7 +5,7 @@
 const GitHubModule = (function () {
   // Sử dụng token mới - token cũ đã hết hạn hoặc không hợp lệ
   const token =
-    "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"; // Token thực tế của người dùng
+    "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"; // Token thực tế của người dùng
   const username = "tuanbacyen";
   const repo = "my-todo-list";
 
@@ -38,6 +38,14 @@ const GitHubModule = (function () {
         }
       );
 
+      if (response.status === 401) {
+        const errorData = await response.json();
+        console.error("Lỗi xác thực GitHub:", errorData);
+        throw new Error(
+          `Lỗi xác thực GitHub: ${errorData.message}. Vui lòng kiểm tra token của bạn.`
+        );
+      }
+
       if (response.status === 404) {
         // Thư mục không tồn tại, tạo nó bằng cách thêm file README.md
         const createResponse = await fetch(
@@ -60,22 +68,30 @@ const GitHubModule = (function () {
         );
 
         if (!createResponse.ok) {
+          const errorData = await createResponse.json();
+          console.error("Lỗi khi tạo thư mục data:", errorData);
           throw new Error(
-            `Không thể tạo thư mục data: ${createResponse.statusText}`
+            `Không thể tạo thư mục data: ${
+              createResponse.statusText
+            } - ${JSON.stringify(errorData)}`
           );
         }
 
         return true;
       } else if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Lỗi khi kiểm tra thư mục data:", errorData);
         throw new Error(
-          `Lỗi khi kiểm tra thư mục data: ${response.statusText}`
+          `Lỗi khi kiểm tra thư mục data: ${
+            response.statusText
+          } - ${JSON.stringify(errorData)}`
         );
       }
 
       return true;
     } catch (error) {
       console.error("Lỗi khi đảm bảo thư mục data:", error);
-      return false;
+      throw error; // Ném lỗi để xử lý ở cấp cao hơn
     }
   }
 
