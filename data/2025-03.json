@@ -1,60 +1,25 @@
 {
   "15": [
     {
-      "id": "1742015202768",
+      "id": "1742016795197",
       "name": "Thêm logic tăng giảm frozen balance và available balance",
-      "priority": 5,
+      "priority": 1,
       "completed": false,
-      "createdAt": "2025-03-15T05:06:42.768Z"
+      "createdAt": "2025-03-15T05:33:15.197Z"
     },
     {
-      "id": "1742015236375",
+      "id": "1742016802230",
       "name": "Update lại ruby test call event",
-      "priority": 5,
+      "priority": 1,
       "completed": false,
-      "createdAt": "2025-03-15T05:07:16.375Z"
+      "createdAt": "2025-03-15T05:33:22.230Z"
     },
     {
-      "id": "1742015249559",
+      "id": "1742016807618",
       "name": "Thêm docker file cho Exchange Engine",
       "priority": 3,
       "completed": false,
-      "createdAt": "2025-03-15T05:07:29.559Z"
-    },
-    {
-      "id": "1742015202768",
-      "name": "Thêm logic tăng giảm frozen balance và available balance",
-      "priority": 5,
-      "completed": false,
-      "createdAt": "2025-03-15T05:06:42.768Z"
-    },
-    {
-      "id": "1742015236375",
-      "name": "Update lại ruby test call event",
-      "priority": 5,
-      "completed": false,
-      "createdAt": "2025-03-15T05:07:16.375Z"
-    },
-    {
-      "id": "1742015249559",
-      "name": "Thêm docker file cho Exchange Engine",
-      "priority": 3,
-      "completed": false,
-      "createdAt": "2025-03-15T05:07:29.559Z"
-    },
-    {
-      "id": "1742016182363",
-      "name": "xxxxx",
-      "priority": 1,
-      "completed": false,
-      "createdAt": "2025-03-15T05:23:02.363Z"
-    },
-    {
-      "id": "1742016182363",
-      "name": "xxxxx",
-      "priority": 1,
-      "completed": false,
-      "createdAt": "2025-03-15T05:23:02.363Z"
+      "createdAt": "2025-03-15T05:33:27.618Z"
     }
   ]
 }
