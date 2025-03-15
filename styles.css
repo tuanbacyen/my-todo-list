@@ -200,6 +200,8 @@ button:hover {
 
 .actions button {
     background-color: #2ecc71;
+    padding: 15px 30px;
+    font-size: 18px;
 }
 
 .actions button:hover {
@@ -208,6 +210,8 @@ button:hover {
 
 .actions .github-btn {
     background-color: #333;
+    width: 100%;
+    max-width: 400px;
 }
 
 .actions .github-btn:hover {
@@ -326,81 +330,31 @@ canvas {
     font-size: 14px;
 }
 
-/* Modal */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-.modal-content {
-    background-color: white;
-    margin: 15% auto;
-    padding: 20px;
-    border-radius: 8px;
-    width: 80%;
-    max-width: 500px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    position: relative;
-    animation: modalFadeIn 0.3s;
-}
-
-@keyframes modalFadeIn {
-    from { opacity: 0; transform: translateY(-50px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.close {
-    position: absolute;
-    right: 20px;
-    top: 15px;
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #7f8c8d;
-}
-
-.close:hover {
-    color: #e74c3c;
-}
-
-.form-group {
-    margin: 20px 0;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-}
-
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+/* Thông báo trạng thái */
+.status-message {
     margin-top: 20px;
-}
-
-#commit-status {
-    margin-top: 15px;
-    padding: 10px;
-    border-radius: 4px;
-    font-size: 14px;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 16px;
     display: none;
+    animation: fadeIn 0.3s;
 }
 
-#commit-status.success {
+.status-message.success {
     background-color: #d4edda;
     color: #155724;
     display: block;
 }
 
-#commit-status.error {
+.status-message.error {
     background-color: #f8d7da;
     color: #721c24;
+    display: block;
+}
+
+.status-message.loading {
+    background-color: #e2f3fd;
+    color: #0c5460;
     display: block;
 }

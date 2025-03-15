@@ -20,7 +20,7 @@
           <div class="input-group">
             <input
               type="text"
-              id="todo-name"
+              id="todo-input"
               placeholder="Tên công việc"
               required
             />
@@ -33,7 +33,7 @@
                 <i class="far fa-star" data-value="4"></i>
                 <i class="far fa-star" data-value="5"></i>
               </div>
-              <input type="hidden" id="priority-value" value="1" />
+              <input type="hidden" id="priority-input" value="1" />
             </div>
           </div>
           <button type="submit">Thêm công việc</button>
@@ -41,9 +41,10 @@
       </div>
 
       <div class="date-selector">
-        <button id="prev-date"><i class="fas fa-chevron-left"></i></button>
+        <button id="prev-day"><i class="fas fa-chevron-left"></i></button>
         <h2 id="current-date"></h2>
-        <button id="next-date"><i class="fas fa-chevron-right"></i></button>
+        <button id="next-day"><i class="fas fa-chevron-right"></i></button>
+        <button id="today-btn" class="today-btn">Hôm nay</button>
       </div>
 
       <div class="todos-container">
@@ -135,32 +136,19 @@
       </div>
 
       <div class="actions">
-        <button id="export-data">Xuất dữ liệu</button>
-        <button id="commit-github" class="github-btn">Commit lên GitHub</button>
+        <button id="commit-btn" class="github-btn">Lưu lên GitHub</button>
       </div>
 
-      <!-- Modal xác nhận commit -->
-      <div id="commit-modal" class="modal">
-        <div class="modal-content">
-          <span class="close">&times;</span>
-          <h3>Commit lên GitHub</h3>
-          <div class="form-group">
-            <label for="commit-message">Thông điệp commit:</label>
-            <input
-              type="text"
-              id="commit-message"
-              placeholder="Cập nhật dữ liệu todo list"
-            />
-          </div>
-          <div class="form-actions">
-            <button id="confirm-commit">Xác nhận</button>
-            <button id="cancel-commit">Hủy</button>
-          </div>
-          <div id="commit-status"></div>
-        </div>
-      </div>
+      <!-- Thông báo trạng thái -->
+      <div id="status-message" class="status-message"></div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Tải các module JavaScript -->
+    <script src="js/data.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/stats.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/github.js"></script>
+    <script src="js/app.js"></script>
   </body>
 </html>

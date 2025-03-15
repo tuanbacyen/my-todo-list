@@ -9,8 +9,8 @@
 - Đánh dấu công việc đã hoàn thành
 - Xóa công việc
 - Chuyển đổi giữa các ngày khác nhau
-- Lưu trữ dữ liệu trong localStorage
-- Xuất dữ liệu dưới dạng file JSON
+- Lưu trữ dữ liệu trong localStorage làm bản sao dự phòng
+- Lưu trữ dữ liệu chính trong các file JSON theo tháng
 - Thống kê công việc hoàn thành và độ ưu tiên (hôm nay, hôm qua, 7 ngày qua)
 - Biểu đồ tiến độ hoàn thành theo ngày và phân bố độ ưu tiên
 - Hiển thị danh sách công việc làm liên tục
@@ -24,8 +24,29 @@
 4. Sử dụng các nút điều hướng để chuyển đổi giữa các ngày
 5. Xem thống kê và biểu đồ để theo dõi tiến độ
 6. Kiểm tra danh sách công việc làm liên tục để biết thói quen của bạn
-7. Nhấn nút "Xuất dữ liệu" để tải xuống file JSON chứa tất cả dữ liệu
+7. Cấu hình GitHub (token, username, repository) để sử dụng tính năng commit
 8. Nhấn nút "Commit lên GitHub" để lưu dữ liệu trực tiếp lên GitHub
+
+## Cấu trúc dự án
+
+Dự án được tổ chức theo cấu trúc module để dễ bảo trì và mở rộng:
+
+```
+my-todo-list/
+├── index.html          # File HTML chính
+├── styles.css          # File CSS
+├── js/                 # Thư mục chứa các module JavaScript
+│   ├── app.js          # Module chính của ứng dụng
+│   ├── data.js         # Module xử lý dữ liệu
+│   ├── ui.js           # Module xử lý giao diện người dùng
+│   ├── stats.js        # Module xử lý thống kê
+│   ├── charts.js       # Module xử lý biểu đồ
+│   └── github.js       # Module xử lý tích hợp GitHub
+├── data/               # Thư mục chứa dữ liệu
+│   ├── README.md       # Mô tả cấu trúc dữ liệu
+│   └── YYYY-MM.json    # File dữ liệu theo tháng
+└── README.md           # File README chính
+```
 
 ## Cấu trúc dữ liệu
 
@@ -33,25 +54,31 @@ Dữ liệu được lưu trữ theo cấu trúc JSON như sau:
 
 ```json
 {
-  "YYYY-MM": {
-    "DD": [
-      {
-        "id": 1234567890,
-        "name": "Tên công việc",
-        "priority": 3,
-        "completed": false,
-        "createdAt": "2023-05-20T08:30:00.000Z"
-      }
-    ]
-  }
+  "01": [
+    {
+      "id": "unique-id-1",
+      "name": "Tên công việc",
+      "priority": 3,
+      "completed": false
+    }
+  ],
+  "02": [
+    {
+      "id": "unique-id-2",
+      "name": "Tên công việc khác",
+      "priority": 5,
+      "completed": true
+    }
+  ]
 }
 ```
 
 Trong đó:
 
-- `YYYY-MM`: Năm và tháng (ví dụ: "2023-05")
-- `DD`: Ngày trong tháng (ví dụ: "20")
-- Mỗi công việc có các thuộc tính: id, tên, độ ưu tiên, trạng thái hoàn thành và thời gian tạo
+- Mỗi file JSON đại diện cho một tháng (tên file: `YYYY-MM.json`)
+- Các key cấp 1 là ngày trong tháng (01, 02, ..., 31)
+- Mỗi ngày chứa một mảng các công việc
+- Mỗi công việc có các thuộc tính: id, tên, độ ưu tiên, trạng thái hoàn thành
 
 ## Thống kê và Biểu đồ
 
@@ -73,15 +100,21 @@ Trong đó:
    - Danh sách các công việc xuất hiện từ 3 lần trở lên
    - Hiển thị tên công việc, tần suất và độ ưu tiên
 
-## Commit lên GitHub
+## Tích hợp GitHub
 
 Để sử dụng tính năng commit lên GitHub:
 
-1. Nhấn nút "Commit lên GitHub"
-2. Nhập thông điệp commit
-3. Nhấn "Xác nhận" để đẩy dữ liệu lên repository
+1. Nhập GitHub Personal Access Token (cần có quyền repo)
+2. Nhập tên người dùng GitHub
+3. Nhập tên repository
+4. Lưu cấu hình
+5. Nhấn nút "Commit lên GitHub" để đẩy dữ liệu lên repository
 
-Lưu ý: Tính năng này yêu cầu bạn có quyền truy cập vào repository GitHub. Token đã được mã hóa nhẹ trong mã nguồn.
+Lưu ý:
+
+- Dữ liệu sẽ được lưu trong thư mục `data/` của repository
+- Mỗi tháng sẽ được lưu thành một file JSON riêng biệt
+- Commit message được tạo tự động với định dạng "Update todos for YYYY-MM - [Ngày giờ]"
 
 ## Triển khai trên GitHub Pages
 
@@ -97,6 +130,7 @@ Sau khi triển khai, ứng dụng sẽ có sẵn tại địa chỉ: `https://<
 
 ## Lưu ý
 
-- Dữ liệu được lưu trong localStorage của trình duyệt, vì vậy sẽ bị mất nếu xóa cache
-- Sử dụng tính năng "Xuất dữ liệu" hoặc "Commit lên GitHub" để sao lưu dữ liệu quan trọng
-- Token GitHub đã được mã hóa nhẹ, nhưng vẫn nên thay thế bằng token của riêng bạn nếu sử dụng trong môi trường sản xuất
+- Dữ liệu được lưu trong localStorage của trình duyệt làm bản sao dự phòng
+- Dữ liệu chính được lưu trong các file JSON trong thư mục `data/`
+- Token GitHub được lưu trong localStorage, hãy đảm bảo sử dụng trên thiết bị an toàn
+- Nên sử dụng tính năng "Commit lên GitHub" thường xuyên để sao lưu dữ liệu
