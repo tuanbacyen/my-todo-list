@@ -9,6 +9,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <div class="container">
@@ -19,7 +20,7 @@
           <div class="input-group">
             <input
               type="text"
-              id="todo-name"
+              id="todo-input"
               placeholder="Tên công việc"
               required
             />
@@ -32,7 +33,7 @@
                 <i class="far fa-star" data-value="4"></i>
                 <i class="far fa-star" data-value="5"></i>
               </div>
-              <input type="hidden" id="priority-value" value="1" />
+              <input type="hidden" id="priority-input" value="1" />
             </div>
           </div>
           <button type="submit">Thêm công việc</button>
@@ -40,20 +41,114 @@
       </div>
 
       <div class="date-selector">
-        <button id="prev-date"><i class="fas fa-chevron-left"></i></button>
+        <button id="prev-day"><i class="fas fa-chevron-left"></i></button>
         <h2 id="current-date"></h2>
-        <button id="next-date"><i class="fas fa-chevron-right"></i></button>
+        <button id="next-day"><i class="fas fa-chevron-right"></i></button>
+        <button id="today-btn" class="today-btn">Hôm nay</button>
       </div>
 
       <div class="todos-container">
         <ul id="todos-list"></ul>
       </div>
 
-      <div class="actions">
-        <button id="export-data">Xuất dữ liệu</button>
+      <!-- Phần thống kê -->
+      <div class="statistics-container">
+        <h3>Thống kê</h3>
+        <div class="stats-cards">
+          <div class="stat-card">
+            <h4>Hôm nay</h4>
+            <div class="stat-details">
+              <p>
+                Đã hoàn thành: <span id="today-completed">0</span>/<span
+                  id="today-total"
+                  >0</span
+                >
+              </p>
+              <p>
+                Tổng độ ưu tiên hoàn thành:
+                <span id="today-priority-completed">0</span>
+              </p>
+              <p>
+                Tổng độ ưu tiên chưa hoàn thành:
+                <span id="today-priority-incomplete">0</span>
+              </p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <h4>Hôm qua</h4>
+            <div class="stat-details">
+              <p>
+                Đã hoàn thành: <span id="yesterday-completed">0</span>/<span
+                  id="yesterday-total"
+                  >0</span
+                >
+              </p>
+              <p>
+                Tổng độ ưu tiên hoàn thành:
+                <span id="yesterday-priority-completed">0</span>
+              </p>
+              <p>
+                Tổng độ ưu tiên chưa hoàn thành:
+                <span id="yesterday-priority-incomplete">0</span>
+              </p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <h4>7 ngày qua</h4>
+            <div class="stat-details">
+              <p>
+                Đã hoàn thành: <span id="week-completed">0</span>/<span
+                  id="week-total"
+                  >0</span
+                >
+              </p>
+              <p>
+                Tổng độ ưu tiên hoàn thành:
+                <span id="week-priority-completed">0</span>
+              </p>
+              <p>
+                Tổng độ ưu tiên chưa hoàn thành:
+                <span id="week-priority-incomplete">0</span>
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- Phần biểu đồ -->
+      <div class="charts-container">
+        <div class="chart-wrapper">
+          <h3>Tiến độ hoàn thành theo ngày</h3>
+          <canvas id="completion-chart"></canvas>
+        </div>
+        <div class="chart-wrapper">
+          <h3>Phân bố độ ưu tiên</h3>
+          <canvas id="priority-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Phần công việc liên tục -->
+      <div class="recurring-tasks">
+        <h3>Công việc làm liên tục</h3>
+        <div id="recurring-tasks-list" class="recurring-tasks-list">
+          <!-- Danh sách công việc liên tục sẽ được thêm vào đây -->
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="commit-btn" class="github-btn">Lưu lên GitHub</button>
+      </div>
+
+      <!-- Thông báo trạng thái -->
+      <div id="status-message" class="status-message"></div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Tải các module JavaScript -->
+    <script src="js/data.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/stats.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/github.js"></script>
+    <script src="js/app.js"></script>
   </body>
 </html>
