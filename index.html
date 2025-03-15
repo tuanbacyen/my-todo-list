@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Todo List</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>My Todo List</h1>
+
+      <div class="add-todo">
+        <form id="todo-form">
+          <div class="input-group">
+            <input
+              type="text"
+              id="todo-name"
+              placeholder="Tên công việc"
+              required
+            />
+            <div class="priority-selector">
+              <label>Độ quan trọng:</label>
+              <div class="stars">
+                <i class="fas fa-star" data-value="1"></i>
+                <i class="far fa-star" data-value="2"></i>
+                <i class="far fa-star" data-value="3"></i>
+                <i class="far fa-star" data-value="4"></i>
+                <i class="far fa-star" data-value="5"></i>
+              </div>
+              <input type="hidden" id="priority-value" value="1" />
+            </div>
+          </div>
+          <button type="submit">Thêm công việc</button>
+        </form>
+      </div>
+
+      <div class="date-selector">
+        <button id="prev-date"><i class="fas fa-chevron-left"></i></button>
+        <h2 id="current-date"></h2>
+        <button id="next-date"><i class="fas fa-chevron-right"></i></button>
+      </div>
+
+      <div class="todos-container">
+        <ul id="todos-list"></ul>
+      </div>
+
+      <div class="actions">
+        <button id="export-data">Xuất dữ liệu</button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
