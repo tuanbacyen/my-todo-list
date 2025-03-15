@@ -118,7 +118,7 @@ const GitHubModule = (function () {
             },
             body: JSON.stringify({
               message: "Tạo thư mục data",
-              content: btoa(
+              content: encodeUnicode(
                 "# Thư mục dữ liệu\nThư mục này chứa dữ liệu todo của ứng dụng."
               ),
               branch: branch,
@@ -340,32 +340,139 @@ const GitHubModule = (function () {
 
   // Hàm mã hóa chuỗi Unicode thành base64 an toàn
   function encodeUnicode(str) {
-    // Chuyển đổi chuỗi thành mảng byte UTF-8
-    const utf8Bytes = new TextEncoder().encode(str);
+    try {
+      // Chuyển đổi chuỗi thành mảng byte UTF-8
+      const utf8Bytes = new TextEncoder().encode(str);
 
-    // Chuyển đổi mảng byte thành chuỗi base64
-    const base64 = btoa(
-      Array.from(utf8Bytes)
-        .map((byte) => String.fromCharCode(byte))
-        .join("")
-    );
+      // Chuyển đổi mảng byte thành chuỗi base64
+      const base64 = btoa(
+        Array.from(utf8Bytes)
+          .map((byte) => String.fromCharCode(byte))
+          .join("")
+      );
 
-    return base64;
+      return base64;
+    } catch (error) {
+      console.error("Lỗi khi mã hóa Unicode:", error);
+
+      // Phương pháp thay thế nếu TextEncoder không khả dụng
+      let binaryString = "";
+      const bytes = new Uint8Array(str.length * 3); // Dự phòng cho các ký tự UTF-8 dài
+      let bytesLength = 0;
+
+      for (let i = 0; i < str.length; i++) {
+        const charCode = str.charCodeAt(i);
+
+        if (charCode < 0x80) {
+          // ASCII character (1 byte)
+          bytes[bytesLength++] = charCode;
+        } else if (charCode < 0x800) {
+          // 2-byte character
+          bytes[bytesLength++] = 0xc0 | (charCode >> 6);
+          bytes[bytesLength++] = 0x80 | (charCode & 0x3f);
+        } else if (charCode < 0xd800 || charCode >= 0xe000) {
+          // 3-byte character
+          bytes[bytesLength++] = 0xe0 | (charCode >> 12);
+          bytes[bytesLength++] = 0x80 | ((charCode >> 6) & 0x3f);
+          bytes[bytesLength++] = 0x80 | (charCode & 0x3f);
+        } else {
+          // Surrogate pair (4-byte character)
+          i++;
+          const nextCharCode = str.charCodeAt(i);
+          const codePoint =
+            (0x10000 + ((charCode & 0x3ff) << 10)) | (nextCharCode & 0x3ff);
+
+          bytes[bytesLength++] = 0xf0 | (codePoint >> 18);
+          bytes[bytesLength++] = 0x80 | ((codePoint >> 12) & 0x3f);
+          bytes[bytesLength++] = 0x80 | ((codePoint >> 6) & 0x3f);
+          bytes[bytesLength++] = 0x80 | (codePoint & 0x3f);
+        }
+      }
+
+      // Chuyển đổi mảng byte thành chuỗi để btoa có thể xử lý
+      for (let i = 0; i < bytesLength; i++) {
+        binaryString += String.fromCharCode(bytes[i]);
+      }
+
+      return btoa(binaryString);
+    }
   }
 
   // Hàm giải mã chuỗi base64 thành Unicode
   function decodeUnicode(base64) {
-    // Giải mã base64 thành chuỗi byte
-    const binaryString = atob(base64);
+    try {
+      // Giải mã base64 thành chuỗi byte
+      const binaryString = atob(base64);
 
-    // Chuyển đổi chuỗi byte thành mảng byte UTF-8
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
+      // Chuyển đổi chuỗi byte thành mảng byte UTF-8
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      // Giải mã mảng byte UTF-8 thành chuỗi Unicode
+      return new TextDecoder().decode(bytes);
+    } catch (error) {
+      console.error("Lỗi khi giải mã Unicode:", error);
+
+      // Phương pháp thay thế nếu TextDecoder không khả dụng
+      try {
+        // Giải mã base64 thành chuỗi byte
+        const binaryString = atob(base64.replace(/-/g, "+").replace(/_/g, "/"));
+
+        // Xử lý UTF-8 thủ công
+        let result = "";
+        let i = 0;
+
+        while (i < binaryString.length) {
+          const byte1 = binaryString.charCodeAt(i++);
+
+          // Xác định số byte của ký tự UTF-8
+          if (byte1 < 0x80) {
+            // 1-byte character
+            result += String.fromCharCode(byte1);
+          } else if (byte1 < 0xe0) {
+            // 2-byte character
+            const byte2 = binaryString.charCodeAt(i++);
+            result += String.fromCharCode(
+              ((byte1 & 0x1f) << 6) | (byte2 & 0x3f)
+            );
+          } else if (byte1 < 0xf0) {
+            // 3-byte character
+            const byte2 = binaryString.charCodeAt(i++);
+            const byte3 = binaryString.charCodeAt(i++);
+            result += String.fromCharCode(
+              ((byte1 & 0x0f) << 12) | ((byte2 & 0x3f) << 6) | (byte3 & 0x3f)
+            );
+          } else {
+            // 4-byte character (surrogate pair in JavaScript)
+            const byte2 = binaryString.charCodeAt(i++);
+            const byte3 = binaryString.charCodeAt(i++);
+            const byte4 = binaryString.charCodeAt(i++);
+
+            // Calculate the Unicode code point
+            const codePoint =
+              ((byte1 & 0x07) << 18) |
+              ((byte2 & 0x3f) << 12) |
+              ((byte3 & 0x3f) << 6) |
+              (byte4 & 0x3f);
+
+            // Convert to surrogate pair
+            const highSurrogate =
+              Math.floor((codePoint - 0x10000) / 0x400) + 0xd800;
+            const lowSurrogate = ((codePoint - 0x10000) % 0x400) + 0xdc00;
+
+            result += String.fromCharCode(highSurrogate, lowSurrogate);
+          }
+        }
+
+        return result;
+      } catch (fallbackError) {
+        console.error("Lỗi khi sử dụng phương pháp thay thế:", fallbackError);
+        // Trả về chuỗi gốc nếu cả hai phương pháp đều thất bại
+        return atob(base64);
+      }
     }
-
-    // Giải mã mảng byte UTF-8 thành chuỗi Unicode
-    return new TextDecoder().decode(bytes);
   }
 
   // Trả về các phương thức công khai
