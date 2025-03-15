@@ -12,12 +12,81 @@ const DataModule = (function () {
     const savedData = localStorage.getItem("todoData");
     if (savedData) {
       try {
-        data = JSON.parse(savedData);
+        const parsedData = JSON.parse(savedData);
+
+        // Chuẩn hóa dữ liệu để đảm bảo đúng định dạng
+        data = normalizeData(parsedData);
       } catch (error) {
         console.error("Lỗi khi phân tích dữ liệu từ localStorage:", error);
         data = {};
       }
     }
+  }
+
+  // Chuẩn hóa dữ liệu để đảm bảo đúng định dạng YYYY-MM/DD
+  function normalizeData(inputData) {
+    const normalizedData = {};
+
+    // Duyệt qua tất cả các key trong dữ liệu
+    for (const key in inputData) {
+      // Nếu key có định dạng YYYY-MM, giữ nguyên
+      if (/^\d{4}-\d{2}$/.test(key)) {
+        normalizedData[key] = inputData[key];
+      }
+      // Nếu key là một ngày, chuyển đổi sang định dạng YYYY-MM/DD
+      else if (key.includes("GMT")) {
+        try {
+          const date = new Date(key);
+          const monthKey = getMonthKey(date);
+          const dateKey = getDateKey(date);
+
+          // Tạo cấu trúc nếu chưa tồn tại
+          if (!normalizedData[monthKey]) {
+            normalizedData[monthKey] = {};
+          }
+
+          // Lấy dữ liệu từ key cũ
+          const todoData = inputData[key];
+
+          // Chuyển đổi dữ liệu sang định dạng mới nếu cần
+          if (Array.isArray(todoData)) {
+            // Nếu đã là mảng, giữ nguyên
+            if (!normalizedData[monthKey][dateKey]) {
+              normalizedData[monthKey][dateKey] = [];
+            }
+            normalizedData[monthKey][dateKey] =
+              normalizedData[monthKey][dateKey].concat(todoData);
+          } else {
+            // Nếu là object cũ, chuyển đổi sang định dạng mới
+            for (const todoName in todoData) {
+              if (!normalizedData[monthKey][dateKey]) {
+                normalizedData[monthKey][dateKey] = [];
+              }
+
+              // Tạo todo mới với định dạng chuẩn
+              const newTodo = {
+                id: Date.now() + "-" + todoName,
+                name: todoName,
+                priority: Array.isArray(todoData[todoName])
+                  ? todoData[todoName].length
+                  : todoData[todoName] || 1,
+                completed: false,
+                createdAt: new Date().toISOString(),
+              };
+
+              normalizedData[monthKey][dateKey].push(newTodo);
+            }
+          }
+        } catch (error) {
+          console.error("Lỗi khi chuyển đổi dữ liệu:", error);
+        }
+      } else {
+        // Các key khác giữ nguyên
+        normalizedData[key] = inputData[key];
+      }
+    }
+
+    return normalizedData;
   }
 
   // Lưu dữ liệu vào localStorage

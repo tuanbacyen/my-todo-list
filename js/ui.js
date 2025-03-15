@@ -145,9 +145,31 @@ const UIModule = (function () {
 
   // Reset form thêm công việc
   function resetTodoForm() {
-    elements.todoNameInput.value = "";
-    elements.priorityValue.value = "1";
-    updateStarsDisplay(1);
+    const todoInput = document.getElementById("todo-input");
+    const priorityInput = document.getElementById("priority-input");
+    const stars = document.querySelectorAll(".stars i");
+
+    // Xóa nội dung input
+    if (todoInput) todoInput.value = "";
+
+    // Reset độ ưu tiên về 1
+    if (priorityInput) priorityInput.value = "1";
+
+    // Reset hiển thị sao
+    if (stars.length > 0) {
+      stars.forEach((star, index) => {
+        if (index === 0) {
+          star.classList.remove("far");
+          star.classList.add("fas");
+        } else {
+          star.classList.remove("fas");
+          star.classList.add("far");
+        }
+      });
+    }
+
+    // Focus vào input để người dùng có thể nhập tiếp
+    if (todoInput) todoInput.focus();
   }
 
   // Hiển thị thông báo trạng thái

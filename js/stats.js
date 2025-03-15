@@ -109,6 +109,9 @@ const StatsModule = (function () {
         const todos = data[monthKey][dateKey];
 
         todos.forEach((todo) => {
+          // Kiểm tra todo và todo.name có tồn tại không
+          if (!todo || !todo.name) return;
+
           const taskName = todo.name.toLowerCase();
 
           // Tăng tần suất
