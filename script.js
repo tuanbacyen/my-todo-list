@@ -35,6 +35,16 @@ document.addEventListener("DOMContentLoaded", function () {
   renderCharts();
   findRecurringTasks();
 
+  // Xử lý sự kiện resize cửa sổ
+  let resizeTimeout;
+  window.addEventListener("resize", function () {
+    // Sử dụng debounce để tránh gọi quá nhiều lần
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(function () {
+      renderCharts();
+    }, 250);
+  });
+
   // Xử lý sự kiện chọn độ ưu tiên (sao)
   stars.forEach((star) => {
     star.addEventListener("click", function () {
@@ -395,13 +405,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Hàm tạo và cập nhật biểu đồ
   function renderCharts() {
-    renderCompletionChart();
-    renderPriorityChart();
+    try {
+      renderCompletionChart();
+      renderPriorityChart();
+    } catch (error) {
+      console.error("Lỗi khi vẽ biểu đồ:", error);
+      // Thử vẽ lại sau một khoảng thời gian
+      setTimeout(function () {
+        try {
+          renderCompletionChart();
+          renderPriorityChart();
+        } catch (retryError) {
+          console.error("Vẫn không thể vẽ biểu đồ:", retryError);
+        }
+      }, 500);
+    }
   }
 
   // Hàm tạo biểu đồ tiến độ hoàn thành theo ngày
   function renderCompletionChart() {
-    const ctx = document.getElementById("completion-chart").getContext("2d");
+    const chartCanvas = document.getElementById("completion-chart");
+    if (!chartCanvas) {
+      console.error("Không tìm thấy canvas cho biểu đồ hoàn thành");
+      return;
+    }
+
+    const ctx = chartCanvas.getContext("2d");
+    if (!ctx) {
+      console.error("Không thể lấy context 2d từ canvas");
+      return;
+    }
 
     // Lấy dữ liệu 7 ngày gần nhất
     const labels = [];
@@ -470,12 +503,33 @@ document.addEventListener("DOMContentLoaded", function () {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "top",
+          },
+        },
         scales: {
           y: {
             beginAtZero: true,
             ticks: {
               precision: 0,
             },
+            grid: {
+              display: true,
+            },
+          },
+          x: {
+            grid: {
+              display: false,
+            },
+          },
+        },
+        layout: {
+          padding: {
+            top: 10,
+            right: 10,
+            bottom: 10,
+            left: 10,
           },
         },
       },
@@ -484,7 +538,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Hàm tạo biểu đồ phân bố độ ưu tiên
   function renderPriorityChart() {
-    const ctx = document.getElementById("priority-chart").getContext("2d");
+    const chartCanvas = document.getElementById("priority-chart");
+    if (!chartCanvas) {
+      console.error("Không tìm thấy canvas cho biểu đồ độ ưu tiên");
+      return;
+    }
+
+    const ctx = chartCanvas.getContext("2d");
+    if (!ctx) {
+      console.error("Không thể lấy context 2d từ canvas");
+      return;
+    }
 
     // Lấy dữ liệu phân bố độ ưu tiên
     const priorityCounts = [0, 0, 0, 0, 0]; // Độ ưu tiên từ 1-5
@@ -530,6 +594,29 @@ document.addEventListener("DOMContentLoaded", function () {
         plugins: {
           legend: {
             position: "right",
+            labels: {
+              boxWidth: 15,
+              padding: 15,
+            },
+          },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const label = context.label || "";
+                const value = context.raw || 0;
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = Math.round((value / total) * 100);
+                return `${label}: ${value} (${percentage}%)`;
+              },
+            },
+          },
+        },
+        layout: {
+          padding: {
+            top: 10,
+            right: 10,
+            bottom: 10,
+            left: 10,
           },
         },
       },
