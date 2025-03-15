@@ -3,15 +3,15 @@
     {
       "id": "1742016795197",
       "name": "Thêm logic tăng giảm frozen balance và available balance",
-      "priority": 1,
+      "priority": 5,
       "completed": false,
       "createdAt": "2025-03-15T05:33:15.197Z"
     },
     {
       "id": "1742016802230",
       "name": "Update lại ruby test call event",
-      "priority": 1,
-      "completed": true,
+      "priority": 5,
+      "completed": false,
       "createdAt": "2025-03-15T05:33:22.230Z"
     },
     {
