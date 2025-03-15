@@ -230,11 +230,17 @@ const GitHubModule = (function () {
               mergedData[dateKey] = [];
             }
 
-            // Thêm các todo chưa commit vào dữ liệu đã hợp nhất
-            mergedData[dateKey] = [
-              ...(mergedData[dateKey] || []),
-              ...uncommittedData[monthKey][dateKey],
-            ];
+            // Thêm các todo chưa commit vào dữ liệu đã hợp nhất, loại bỏ trùng lặp
+            const existingIds = new Set(
+              mergedData[dateKey].map((todo) => todo.id)
+            );
+
+            // Chỉ thêm các todo có id chưa tồn tại
+            const uniqueNewTodos = uncommittedData[monthKey][dateKey].filter(
+              (todo) => !existingIds.has(todo.id)
+            );
+
+            mergedData[dateKey] = [...mergedData[dateKey], ...uniqueNewTodos];
           }
         }
       }

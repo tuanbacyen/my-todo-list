@@ -79,12 +79,17 @@ const AppModule = (function () {
       // Tải dữ liệu từ GitHub nếu đã cấu hình
       if (window.GitHubModule && window.GitHubModule.isConfigured()) {
         try {
+          // Luôn tải dữ liệu mới nhất từ GitHub
+          UIModule.showStatusMessage("Đang tải dữ liệu từ GitHub...", "info");
           const data = await window.GitHubModule.loadDataFromGitHub(monthKey);
-          if (data && Object.keys(data).length > 0) {
-            // Thiết lập dữ liệu cho tháng hiện tại
-            // DataModule.setMonthData sẽ tự động hợp nhất với dữ liệu chưa commit
-            DataModule.setMonthData(monthKey, data);
-          }
+
+          // Luôn thiết lập dữ liệu mới từ GitHub, ngay cả khi trống
+          DataModule.setMonthData(monthKey, data || {});
+
+          UIModule.showStatusMessage(
+            "Đã tải dữ liệu từ GitHub thành công!",
+            "success"
+          );
         } catch (error) {
           console.error("Lỗi khi tải dữ liệu từ GitHub:", error);
           UIModule.showStatusMessage(
@@ -314,6 +319,18 @@ const AppModule = (function () {
         "Đã lưu dữ liệu lên GitHub thành công!",
         "success"
       );
+
+      // Tải lại dữ liệu từ GitHub để đảm bảo hiển thị dữ liệu mới nhất
+      await loadData();
+
+      // Cập nhật giao diện
+      updateTodoList();
+      updateStatistics();
+
+      // Cập nhật biểu đồ
+      if (window.ChartModule) {
+        window.ChartModule.renderCharts(DataModule.getAllData());
+      }
     } catch (error) {
       console.error("Lỗi khi lưu dữ liệu lên GitHub:", error);
       UIModule.showStatusMessage(

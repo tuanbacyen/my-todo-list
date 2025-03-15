@@ -59,10 +59,20 @@ const DataModule = (function () {
           mergedData[monthKey][dateKey] = [];
         }
 
+        // Tạo Set các ID đã tồn tại để loại bỏ trùng lặp
+        const existingIds = new Set(
+          mergedData[monthKey][dateKey].map((todo) => todo.id)
+        );
+
+        // Lọc ra các todo chưa commit mà chưa tồn tại trong dữ liệu đã commit
+        const uniqueUncommittedTodos = uncommittedData[monthKey][
+          dateKey
+        ].filter((todo) => !existingIds.has(todo.id));
+
         // Thêm các todo chưa commit vào dữ liệu đã hợp nhất
         mergedData[monthKey][dateKey] = [
           ...mergedData[monthKey][dateKey],
-          ...uncommittedData[monthKey][dateKey],
+          ...uniqueUncommittedTodos,
         ];
       }
     }
@@ -173,10 +183,13 @@ const DataModule = (function () {
     // Lưu dữ liệu từ GitHub
     data[monthKey] = monthData;
 
+    // Lưu vào localStorage trước khi hợp nhất
+    saveData();
+
     // Hợp nhất với dữ liệu chưa commit
     mergeData();
 
-    // Lưu vào localStorage
+    // Lưu lại sau khi hợp nhất
     saveData();
   }
 
