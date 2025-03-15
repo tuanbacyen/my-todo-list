@@ -16,6 +16,8 @@ const AppModule = (function () {
     prevDayButton: document.getElementById("prev-day"),
     nextDayButton: document.getElementById("next-day"),
     todayButton: document.getElementById("today-btn"),
+    pickDateButton: document.getElementById("pick-date-btn"),
+    datePicker: document.getElementById("date-picker"),
     commitBtn: document.getElementById("commit-btn"),
     todosList: document.getElementById("todos-list"),
   };
@@ -143,6 +145,16 @@ const AppModule = (function () {
         toggleTodoComplete(todoId);
       }
 
+      // Xử lý sự kiện chỉnh sửa công việc
+      if (
+        e.target.classList.contains("edit-btn") ||
+        e.target.closest(".edit-btn")
+      ) {
+        const todoItem = e.target.closest(".todo-item");
+        const todoId = todoItem.dataset.id;
+        editTodo(todoId);
+      }
+
       // Xử lý sự kiện xóa công việc
       if (
         e.target.classList.contains("delete-btn") ||
@@ -200,6 +212,37 @@ const AppModule = (function () {
       updateDateDisplay();
       updateTodoList();
       updateStatistics();
+    });
+
+    // Sự kiện chọn ngày cụ thể
+    elements.pickDateButton.addEventListener("click", function () {
+      // Hiển thị date picker
+      elements.datePicker.style.display = "inline-block";
+
+      // Thiết lập giá trị mặc định là ngày hiện tại
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+      const day = String(currentDate.getDate()).padStart(2, "0");
+      elements.datePicker.value = `${year}-${month}-${day}`;
+
+      // Focus vào date picker
+      elements.datePicker.focus();
+    });
+
+    elements.datePicker.addEventListener("change", function () {
+      // Lấy ngày được chọn
+      const selectedDate = new Date(this.value);
+
+      // Cập nhật ngày hiện tại
+      currentDate = selectedDate;
+
+      // Cập nhật giao diện
+      updateDateDisplay();
+      updateTodoList();
+      updateStatistics();
+
+      // Ẩn date picker
+      this.style.display = "none";
     });
 
     // Thiết lập sự kiện cho các ngôi sao
@@ -338,6 +381,39 @@ const AppModule = (function () {
         "error"
       );
     }
+  }
+
+  // Hàm chỉnh sửa công việc
+  function editTodo(todoId) {
+    const dateKey = DataModule.getDateKey(currentDate);
+    const monthKey = DataModule.getMonthKey(currentDate);
+
+    // Lấy danh sách công việc
+    const todos = DataModule.getTodos(monthKey, dateKey);
+
+    // Tìm công việc cần chỉnh sửa
+    const todo = todos.find((todo) => todo.id === todoId);
+
+    if (!todo) return;
+
+    // Hiển thị modal chỉnh sửa
+    UIModule.showEditModal(todo, (updatedTodo) => {
+      // Cập nhật công việc
+      const success = DataModule.updateTodo(monthKey, dateKey, updatedTodo);
+
+      if (success) {
+        // Cập nhật giao diện
+        updateTodoList();
+        updateStatistics();
+
+        // Cập nhật biểu đồ
+        if (window.ChartModule) {
+          window.ChartModule.renderCharts(DataModule.getAllData());
+        }
+
+        UIModule.showStatusMessage("Đã cập nhật công việc!", "success");
+      }
+    });
   }
 
   // Trả về các phương thức public

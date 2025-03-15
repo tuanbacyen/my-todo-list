@@ -106,6 +106,11 @@ const UIModule = (function () {
           : '<i class="far fa-circle"></i>';
         completeBtn.className = "complete-btn";
 
+        // Nút chỉnh sửa
+        const editBtn = document.createElement("button");
+        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+        editBtn.className = "edit-btn";
+
         // Nút xóa
         const deleteBtn = document.createElement("button");
         deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
@@ -113,6 +118,7 @@ const UIModule = (function () {
 
         // Thêm các phần tử vào DOM
         todoActions.appendChild(completeBtn);
+        todoActions.appendChild(editBtn);
         todoActions.appendChild(deleteBtn);
 
         li.appendChild(priorityDiv);
@@ -173,16 +179,17 @@ const UIModule = (function () {
   }
 
   // Hiển thị thông báo trạng thái
-  function showStatusMessage(message, type) {
+  function showStatusMessage(message, type = "info") {
+    if (!elements.statusMessage) return;
+
     elements.statusMessage.textContent = message;
     elements.statusMessage.className = `status-message ${type}`;
+    elements.statusMessage.style.display = "block";
 
-    // Tự động ẩn thông báo sau 3 giây nếu là success
-    if (type === "success") {
-      setTimeout(() => {
-        elements.statusMessage.className = "status-message";
-      }, 3000);
-    }
+    // Ẩn thông báo sau 3 giây
+    setTimeout(() => {
+      elements.statusMessage.style.display = "none";
+    }, 3000);
   }
 
   // Cập nhật thống kê
@@ -254,6 +261,106 @@ const UIModule = (function () {
     }
   }
 
+  // Hiển thị modal chỉnh sửa công việc
+  function showEditModal(todo, callback) {
+    // Tạo modal nếu chưa tồn tại
+    let editModal = document.getElementById("edit-todo-modal");
+
+    if (!editModal) {
+      editModal = document.createElement("div");
+      editModal.id = "edit-todo-modal";
+      editModal.className = "modal";
+
+      // Tạo nội dung modal
+      editModal.innerHTML = `
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <h2>Chỉnh sửa công việc</h2>
+          <form id="edit-todo-form">
+            <div class="form-group">
+              <label for="edit-todo-name">Tên công việc:</label>
+              <input type="text" id="edit-todo-name" required>
+            </div>
+            <div class="form-group">
+              <label>Độ ưu tiên:</label>
+              <div class="stars edit-stars">
+                <i class="far fa-star" data-value="1"></i>
+                <i class="far fa-star" data-value="2"></i>
+                <i class="far fa-star" data-value="3"></i>
+                <i class="far fa-star" data-value="4"></i>
+                <i class="far fa-star" data-value="5"></i>
+              </div>
+              <input type="hidden" id="edit-todo-priority" value="1">
+            </div>
+            <button type="submit" class="btn">Lưu thay đổi</button>
+          </form>
+        </div>
+      `;
+
+      document.body.appendChild(editModal);
+    }
+
+    // Lấy các phần tử trong modal
+    const nameInput = document.getElementById("edit-todo-name");
+    const priorityInput = document.getElementById("edit-todo-priority");
+    const stars = editModal.querySelectorAll(".edit-stars i");
+    const form = document.getElementById("edit-todo-form");
+    const closeBtn = editModal.querySelector(".close");
+
+    // Điền thông tin công việc vào form
+    nameInput.value = todo.name;
+    priorityInput.value = todo.priority;
+
+    // Cập nhật hiển thị sao
+    updateStars(stars, todo.priority);
+
+    // Thiết lập sự kiện cho các ngôi sao
+    stars.forEach((star) => {
+      star.addEventListener("click", function () {
+        const value = parseInt(this.getAttribute("data-value"));
+        priorityInput.value = value;
+        updateStars(stars, value);
+      });
+    });
+
+    // Thiết lập sự kiện đóng modal
+    closeBtn.addEventListener("click", function () {
+      editModal.style.display = "none";
+    });
+
+    // Thiết lập sự kiện submit form
+    form.onsubmit = function (e) {
+      e.preventDefault();
+
+      const updatedTodo = {
+        ...todo,
+        name: nameInput.value.trim(),
+        priority: parseInt(priorityInput.value),
+      };
+
+      // Đóng modal
+      editModal.style.display = "none";
+
+      // Gọi callback với thông tin đã cập nhật
+      callback(updatedTodo);
+    };
+
+    // Hiển thị modal
+    editModal.style.display = "block";
+  }
+
+  // Cập nhật hiển thị sao
+  function updateStars(stars, value) {
+    stars.forEach((star) => {
+      const starValue = parseInt(star.getAttribute("data-value"));
+      if (starValue <= value) {
+        star.className = "fas fa-star";
+      } else {
+        star.className = "far fa-star";
+      }
+    });
+  }
+
   // Khởi tạo module
   function init() {
     // Thiết lập sự kiện cho các ngôi sao
@@ -272,6 +379,7 @@ const UIModule = (function () {
     updateStatistics,
     renderRecurringTasks,
     setupStarsEvents,
+    showEditModal,
   };
 })();
 

@@ -336,6 +336,60 @@ const DataModule = (function () {
     saveUncommittedData();
   }
 
+  // Cập nhật công việc
+  function updateTodo(monthKey, dateKey, updatedTodo) {
+    // Kiểm tra trong dữ liệu đã hợp nhất
+    if (!data[monthKey] || !data[monthKey][dateKey]) {
+      return false;
+    }
+
+    const todoIndex = data[monthKey][dateKey].findIndex(
+      (todo) => todo.id === updatedTodo.id
+    );
+
+    if (todoIndex === -1) {
+      return false;
+    }
+
+    // Cập nhật trong dữ liệu đã hợp nhất
+    data[monthKey][dateKey][todoIndex] = {
+      ...data[monthKey][dateKey][todoIndex],
+      name: updatedTodo.name,
+      priority: updatedTodo.priority,
+    };
+    saveData();
+
+    // Thêm vào dữ liệu chưa commit
+    if (!uncommittedData[monthKey]) {
+      uncommittedData[monthKey] = {};
+    }
+    if (!uncommittedData[monthKey][dateKey]) {
+      uncommittedData[monthKey][dateKey] = [];
+    }
+
+    // Kiểm tra xem đã có trong dữ liệu chưa commit chưa
+    const uncommittedIndex = uncommittedData[monthKey][dateKey].findIndex(
+      (todo) => todo.id === updatedTodo.id
+    );
+
+    if (uncommittedIndex !== -1) {
+      // Cập nhật nếu đã có
+      uncommittedData[monthKey][dateKey][uncommittedIndex] = {
+        ...uncommittedData[monthKey][dateKey][uncommittedIndex],
+        name: updatedTodo.name,
+        priority: updatedTodo.priority,
+      };
+    } else {
+      // Thêm mới nếu chưa có
+      uncommittedData[monthKey][dateKey].push(
+        JSON.parse(JSON.stringify(data[monthKey][dateKey][todoIndex]))
+      );
+    }
+    saveUncommittedData();
+
+    return true;
+  }
+
   // Hàm lấy key ngày theo định dạng DD
   function getDateKey(date) {
     return String(date.getDate()).padStart(2, "0");
@@ -361,6 +415,7 @@ const DataModule = (function () {
     addTodo,
     toggleTodoComplete,
     deleteTodo,
+    updateTodo,
     getMonthKey,
     getDateKey,
     saveData,
