@@ -240,7 +240,9 @@ const GitHubModule = (function () {
       }
 
       // Chuẩn bị dữ liệu để lưu
-      const content = btoa(JSON.stringify(mergedData, null, 2));
+      // Sử dụng hàm encodeUnicode để xử lý các ký tự Unicode
+      const jsonString = JSON.stringify(mergedData, null, 2);
+      const content = encodeUnicode(jsonString);
       const commitMessage = generateCommitMessage();
 
       const requestBody = {
@@ -318,14 +320,52 @@ const GitHubModule = (function () {
       }
 
       const data = await response.json();
-      const content = atob(data.content);
-
-      return JSON.parse(content);
+      // Sử dụng hàm decodeUnicode để giải mã nội dung
+      try {
+        // GitHub API trả về nội dung đã được mã hóa base64
+        const content = decodeUnicode(data.content);
+        return JSON.parse(content);
+      } catch (error) {
+        // Nếu có lỗi với phương pháp mới, thử phương pháp cũ
+        console.warn("Lỗi khi giải mã Unicode, thử phương pháp cũ:", error);
+        const content = atob(data.content);
+        return JSON.parse(content);
+      }
     } catch (error) {
       console.error("Lỗi khi tải dữ liệu từ GitHub:", error);
       // Trả về đối tượng trống nếu có lỗi
       return {};
     }
+  }
+
+  // Hàm mã hóa chuỗi Unicode thành base64 an toàn
+  function encodeUnicode(str) {
+    // Chuyển đổi chuỗi thành mảng byte UTF-8
+    const utf8Bytes = new TextEncoder().encode(str);
+
+    // Chuyển đổi mảng byte thành chuỗi base64
+    const base64 = btoa(
+      Array.from(utf8Bytes)
+        .map((byte) => String.fromCharCode(byte))
+        .join("")
+    );
+
+    return base64;
+  }
+
+  // Hàm giải mã chuỗi base64 thành Unicode
+  function decodeUnicode(base64) {
+    // Giải mã base64 thành chuỗi byte
+    const binaryString = atob(base64);
+
+    // Chuyển đổi chuỗi byte thành mảng byte UTF-8
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    // Giải mã mảng byte UTF-8 thành chuỗi Unicode
+    return new TextDecoder().decode(bytes);
   }
 
   // Trả về các phương thức công khai
