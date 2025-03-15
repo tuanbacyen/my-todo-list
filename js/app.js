@@ -81,6 +81,8 @@ const AppModule = (function () {
         try {
           const data = await window.GitHubModule.loadDataFromGitHub(monthKey);
           if (data && Object.keys(data).length > 0) {
+            // Thiết lập dữ liệu cho tháng hiện tại
+            // DataModule.setMonthData sẽ tự động hợp nhất với dữ liệu chưa commit
             DataModule.setMonthData(monthKey, data);
           }
         } catch (error) {

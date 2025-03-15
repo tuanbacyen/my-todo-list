@@ -4,23 +4,71 @@
 
 const DataModule = (function () {
   // Dữ liệu todo theo tháng và ngày
-  let data = {};
+  let data = {}; // Dữ liệu đã commit từ GitHub
+  let uncommittedData = {}; // Dữ liệu chưa commit
 
   // Khởi tạo dữ liệu
   function init() {
     // Tải dữ liệu từ localStorage nếu có
+    loadFromLocalStorage();
+  }
+
+  // Tải dữ liệu từ localStorage
+  function loadFromLocalStorage() {
+    // Tải dữ liệu đã commit
     const savedData = localStorage.getItem("todoData");
     if (savedData) {
       try {
         const parsedData = JSON.parse(savedData);
-
-        // Chuẩn hóa dữ liệu để đảm bảo đúng định dạng
         data = normalizeData(parsedData);
       } catch (error) {
         console.error("Lỗi khi phân tích dữ liệu từ localStorage:", error);
         data = {};
       }
     }
+
+    // Tải dữ liệu chưa commit
+    const uncommittedSavedData = localStorage.getItem("todoDataUncommitted");
+    if (uncommittedSavedData) {
+      try {
+        const parsedData = JSON.parse(uncommittedSavedData);
+        uncommittedData = normalizeData(parsedData);
+      } catch (error) {
+        console.error("Lỗi khi phân tích dữ liệu chưa commit:", error);
+        uncommittedData = {};
+      }
+    }
+
+    // Hợp nhất dữ liệu
+    mergeData();
+  }
+
+  // Hợp nhất dữ liệu đã commit và chưa commit
+  function mergeData() {
+    // Tạo bản sao sâu của dữ liệu đã commit
+    const mergedData = JSON.parse(JSON.stringify(data));
+
+    // Hợp nhất với dữ liệu chưa commit
+    for (const monthKey in uncommittedData) {
+      if (!mergedData[monthKey]) {
+        mergedData[monthKey] = {};
+      }
+
+      for (const dateKey in uncommittedData[monthKey]) {
+        if (!mergedData[monthKey][dateKey]) {
+          mergedData[monthKey][dateKey] = [];
+        }
+
+        // Thêm các todo chưa commit vào dữ liệu đã hợp nhất
+        mergedData[monthKey][dateKey] = [
+          ...mergedData[monthKey][dateKey],
+          ...uncommittedData[monthKey][dateKey],
+        ];
+      }
+    }
+
+    // Cập nhật dữ liệu
+    data = mergedData;
   }
 
   // Chuẩn hóa dữ liệu để đảm bảo đúng định dạng YYYY-MM/DD
@@ -98,7 +146,19 @@ const DataModule = (function () {
     }
   }
 
-  // Lấy tất cả dữ liệu
+  // Lưu dữ liệu chưa commit vào localStorage
+  function saveUncommittedData() {
+    try {
+      localStorage.setItem(
+        "todoDataUncommitted",
+        JSON.stringify(uncommittedData)
+      );
+    } catch (error) {
+      console.error("Lỗi khi lưu dữ liệu chưa commit:", error);
+    }
+  }
+
+  // Lấy tất cả dữ liệu (đã hợp nhất)
   function getAllData() {
     return data;
   }
@@ -108,9 +168,15 @@ const DataModule = (function () {
     return data[monthKey] || {};
   }
 
-  // Thiết lập dữ liệu cho một tháng
+  // Thiết lập dữ liệu cho một tháng (từ GitHub)
   function setMonthData(monthKey, monthData) {
+    // Lưu dữ liệu từ GitHub
     data[monthKey] = monthData;
+
+    // Hợp nhất với dữ liệu chưa commit
+    mergeData();
+
+    // Lưu vào localStorage
     saveData();
   }
 
@@ -127,8 +193,21 @@ const DataModule = (function () {
     return data[monthKey][dateKey];
   }
 
-  // Thêm công việc mới
+  // Thêm công việc mới (vào dữ liệu chưa commit)
   function addTodo(monthKey, dateKey, todo) {
+    // Thêm vào dữ liệu chưa commit
+    if (!uncommittedData[monthKey]) {
+      uncommittedData[monthKey] = {};
+    }
+
+    if (!uncommittedData[monthKey][dateKey]) {
+      uncommittedData[monthKey][dateKey] = [];
+    }
+
+    uncommittedData[monthKey][dateKey].push(todo);
+    saveUncommittedData();
+
+    // Cập nhật dữ liệu đã hợp nhất
     if (!data[monthKey]) {
       data[monthKey] = {};
     }
@@ -145,6 +224,7 @@ const DataModule = (function () {
 
   // Cập nhật trạng thái hoàn thành của công việc
   function toggleTodoComplete(monthKey, dateKey, todoId) {
+    // Kiểm tra trong dữ liệu đã hợp nhất
     if (!data[monthKey] || !data[monthKey][dateKey]) {
       return false;
     }
@@ -157,15 +237,55 @@ const DataModule = (function () {
       return false;
     }
 
+    // Cập nhật trạng thái trong dữ liệu đã hợp nhất
     data[monthKey][dateKey][todoIndex].completed =
       !data[monthKey][dateKey][todoIndex].completed;
     saveData();
+
+    // Kiểm tra xem todo có trong dữ liệu chưa commit không
+    if (uncommittedData[monthKey] && uncommittedData[monthKey][dateKey]) {
+      const uncommittedTodoIndex = uncommittedData[monthKey][dateKey].findIndex(
+        (todo) => todo.id === todoId
+      );
+
+      if (uncommittedTodoIndex !== -1) {
+        // Cập nhật trạng thái trong dữ liệu chưa commit
+        uncommittedData[monthKey][dateKey][uncommittedTodoIndex].completed =
+          data[monthKey][dateKey][todoIndex].completed;
+        saveUncommittedData();
+      } else {
+        // Nếu không có trong dữ liệu chưa commit, thêm vào
+        if (!uncommittedData[monthKey]) {
+          uncommittedData[monthKey] = {};
+        }
+        if (!uncommittedData[monthKey][dateKey]) {
+          uncommittedData[monthKey][dateKey] = [];
+        }
+        uncommittedData[monthKey][dateKey].push(
+          JSON.parse(JSON.stringify(data[monthKey][dateKey][todoIndex]))
+        );
+        saveUncommittedData();
+      }
+    } else {
+      // Nếu không có trong dữ liệu chưa commit, thêm vào
+      if (!uncommittedData[monthKey]) {
+        uncommittedData[monthKey] = {};
+      }
+      if (!uncommittedData[monthKey][dateKey]) {
+        uncommittedData[monthKey][dateKey] = [];
+      }
+      uncommittedData[monthKey][dateKey].push(
+        JSON.parse(JSON.stringify(data[monthKey][dateKey][todoIndex]))
+      );
+      saveUncommittedData();
+    }
 
     return true;
   }
 
   // Xóa công việc
   function deleteTodo(monthKey, dateKey, todoId) {
+    // Xóa từ dữ liệu đã hợp nhất
     if (!data[monthKey] || !data[monthKey][dateKey]) {
       return false;
     }
@@ -180,7 +300,27 @@ const DataModule = (function () {
     }
 
     saveData();
+
+    // Xóa từ dữ liệu chưa commit nếu có
+    if (uncommittedData[monthKey] && uncommittedData[monthKey][dateKey]) {
+      uncommittedData[monthKey][dateKey] = uncommittedData[monthKey][
+        dateKey
+      ].filter((todo) => todo.id !== todoId);
+      saveUncommittedData();
+    }
+
     return true;
+  }
+
+  // Lấy dữ liệu chưa commit để đẩy lên GitHub
+  function getUncommittedData() {
+    return uncommittedData;
+  }
+
+  // Xóa dữ liệu chưa commit sau khi đã đẩy lên GitHub
+  function clearUncommittedData() {
+    uncommittedData = {};
+    saveUncommittedData();
   }
 
   // Hàm lấy key ngày theo định dạng DD
@@ -211,6 +351,8 @@ const DataModule = (function () {
     getMonthKey,
     getDateKey,
     saveData,
+    getUncommittedData,
+    clearUncommittedData,
   };
 })();
 

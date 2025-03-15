@@ -212,8 +212,35 @@ const GitHubModule = (function () {
       // Lấy SHA của file nếu tồn tại
       const fileSHA = await getFileSHA(filePath);
 
+      // Hợp nhất dữ liệu đã commit với dữ liệu chưa commit
+      let mergedData = data;
+
+      // Nếu có dữ liệu chưa commit, hợp nhất vào
+      if (window.DataModule && window.DataModule.getUncommittedData) {
+        const uncommittedData = window.DataModule.getUncommittedData();
+
+        // Kiểm tra xem có dữ liệu chưa commit cho tháng hiện tại không
+        if (uncommittedData[monthKey]) {
+          // Tạo bản sao sâu của dữ liệu
+          mergedData = JSON.parse(JSON.stringify(data));
+
+          // Hợp nhất dữ liệu
+          for (const dateKey in uncommittedData[monthKey]) {
+            if (!mergedData[dateKey]) {
+              mergedData[dateKey] = [];
+            }
+
+            // Thêm các todo chưa commit vào dữ liệu đã hợp nhất
+            mergedData[dateKey] = [
+              ...(mergedData[dateKey] || []),
+              ...uncommittedData[monthKey][dateKey],
+            ];
+          }
+        }
+      }
+
       // Chuẩn bị dữ liệu để lưu
-      const content = btoa(JSON.stringify(data, null, 2));
+      const content = btoa(JSON.stringify(mergedData, null, 2));
       const commitMessage = generateCommitMessage();
 
       const requestBody = {
@@ -248,6 +275,11 @@ const GitHubModule = (function () {
             errorData
           )}`
         );
+      }
+
+      // Xóa dữ liệu chưa commit sau khi đã lưu thành công
+      if (window.DataModule && window.DataModule.clearUncommittedData) {
+        window.DataModule.clearUncommittedData();
       }
 
       return true;
