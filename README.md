@@ -11,6 +11,10 @@
 - Chuyển đổi giữa các ngày khác nhau
 - Lưu trữ dữ liệu trong localStorage
 - Xuất dữ liệu dưới dạng file JSON
+- Thống kê công việc hoàn thành và độ ưu tiên (hôm nay, hôm qua, 7 ngày qua)
+- Biểu đồ tiến độ hoàn thành theo ngày và phân bố độ ưu tiên
+- Hiển thị danh sách công việc làm liên tục
+- Commit dữ liệu trực tiếp lên GitHub
 
 ## Cách sử dụng
 
@@ -18,7 +22,10 @@
 2. Nhập tên công việc và chọn độ ưu tiên (số sao)
 3. Nhấn nút "Thêm công việc" để thêm vào danh sách
 4. Sử dụng các nút điều hướng để chuyển đổi giữa các ngày
-5. Nhấn nút "Xuất dữ liệu" để tải xuống file JSON chứa tất cả dữ liệu
+5. Xem thống kê và biểu đồ để theo dõi tiến độ
+6. Kiểm tra danh sách công việc làm liên tục để biết thói quen của bạn
+7. Nhấn nút "Xuất dữ liệu" để tải xuống file JSON chứa tất cả dữ liệu
+8. Nhấn nút "Commit lên GitHub" để lưu dữ liệu trực tiếp lên GitHub
 
 ## Cấu trúc dữ liệu
 
@@ -46,6 +53,36 @@ Trong đó:
 - `DD`: Ngày trong tháng (ví dụ: "20")
 - Mỗi công việc có các thuộc tính: id, tên, độ ưu tiên, trạng thái hoàn thành và thời gian tạo
 
+## Thống kê và Biểu đồ
+
+Ứng dụng cung cấp các thống kê và biểu đồ sau:
+
+1. **Thống kê**:
+
+   - Số lượng công việc đã hoàn thành và tổng số công việc
+   - Tổng độ ưu tiên của các công việc đã hoàn thành
+   - Tổng độ ưu tiên của các công việc chưa hoàn thành
+   - Thống kê cho hôm nay, hôm qua và 7 ngày qua
+
+2. **Biểu đồ**:
+
+   - Biểu đồ cột hiển thị tiến độ hoàn thành theo ngày (7 ngày gần nhất)
+   - Biểu đồ tròn hiển thị phân bố độ ưu tiên của tất cả công việc
+
+3. **Công việc liên tục**:
+   - Danh sách các công việc xuất hiện từ 3 lần trở lên
+   - Hiển thị tên công việc, tần suất và độ ưu tiên
+
+## Commit lên GitHub
+
+Để sử dụng tính năng commit lên GitHub:
+
+1. Nhấn nút "Commit lên GitHub"
+2. Nhập thông điệp commit
+3. Nhấn "Xác nhận" để đẩy dữ liệu lên repository
+
+Lưu ý: Tính năng này yêu cầu bạn có quyền truy cập vào repository GitHub. Token đã được mã hóa nhẹ trong mã nguồn.
+
 ## Triển khai trên GitHub Pages
 
 Để triển khai ứng dụng này trên GitHub Pages:
@@ -61,5 +98,5 @@ Sau khi triển khai, ứng dụng sẽ có sẵn tại địa chỉ: `https://<
 ## Lưu ý
 
 - Dữ liệu được lưu trong localStorage của trình duyệt, vì vậy sẽ bị mất nếu xóa cache
-- Sử dụng tính năng "Xuất dữ liệu" để sao lưu dữ liệu quan trọng
-- Để commit dữ liệu lên GitHub, bạn cần tải xuống file JSON và đẩy lên repository thủ công
+- Sử dụng tính năng "Xuất dữ liệu" hoặc "Commit lên GitHub" để sao lưu dữ liệu quan trọng
+- Token GitHub đã được mã hóa nhẹ, nhưng vẫn nên thay thế bằng token của riêng bạn nếu sử dụng trong môi trường sản xuất

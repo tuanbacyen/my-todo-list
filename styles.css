@@ -28,6 +28,13 @@ h1 {
     color: #2c3e50;
 }
 
+h3 {
+    color: #2c3e50;
+    margin: 20px 0 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
 .add-todo {
     margin-bottom: 30px;
     background-color: #f9f9f9;
@@ -187,6 +194,8 @@ button:hover {
 .actions {
     display: flex;
     justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
 }
 
 .actions button {
@@ -195,4 +204,200 @@ button:hover {
 
 .actions button:hover {
     background-color: #27ae60;
+}
+
+.actions .github-btn {
+    background-color: #333;
+}
+
+.actions .github-btn:hover {
+    background-color: #000;
+}
+
+/* Phần thống kê */
+.statistics-container {
+    margin: 30px 0;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.stats-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 15px;
+}
+
+.stat-card {
+    flex: 1;
+    min-width: 200px;
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card h4 {
+    margin-bottom: 10px;
+    color: #3498db;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.stat-details p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+/* Phần biểu đồ */
+.charts-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.chart-wrapper {
+    flex: 1;
+    min-width: 300px;
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.chart-wrapper h3 {
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: none;
+}
+
+canvas {
+    width: 100%;
+    height: 250px;
+}
+
+/* Phần công việc liên tục */
+.recurring-tasks {
+    margin: 30px 0;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.recurring-tasks-list {
+    margin-top: 15px;
+}
+
+.recurring-task-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background-color: white;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.recurring-task-item .task-name {
+    flex: 1;
+}
+
+.recurring-task-item .task-frequency {
+    margin-right: 15px;
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+.recurring-task-item .task-priority {
+    display: flex;
+    gap: 2px;
+    margin-right: 15px;
+}
+
+.recurring-task-item .task-priority i {
+    color: #f1c40f;
+    font-size: 14px;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    animation: modalFadeIn 0.3s;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-50px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #7f8c8d;
+}
+
+.close:hover {
+    color: #e74c3c;
+}
+
+.form-group {
+    margin: 20px 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+#commit-status {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    display: none;
+}
+
+#commit-status.success {
+    background-color: #d4edda;
+    color: #155724;
+    display: block;
+}
+
+#commit-status.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    display: block;
 }
